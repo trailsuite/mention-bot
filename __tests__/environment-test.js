@@ -121,5 +121,67 @@ describe('environment', () => {
         cKeyName:false
       });
     });
+
+    it('correctly interperts the current config', () => {
+      let environment = require('../environment.js').environment;
+
+      process.env.MAX_REVIEWERS = '4';
+      process.env.NUM_FILES_TO_CHECK = '6';
+      process.env.USER_BLACKLIST = 'user1';
+      process.env.USER_BLACKLIST_FOR_PR = 'user1,user2';
+      process.env.USER_WHITELIST = 'user3';
+      process.env.FILE_BLACKLIST = '**.md';
+      process.env.REQUIRED_ORGS = 'facebook';
+      process.env.FIND_POTENTIAL_REVIEWERS = 'false';
+      process.env.ACTIONS = 'opened,closed';
+      process.env.SKIP_ALREADY_ASSIGNED_PR = 'true';
+      process.env.SKIP_ALREADY_MENTIONED_PR = 'true';
+      process.env.DELAYED = 'true';
+      process.env.DELAYED_UNTIL = '1d';
+      process.env.ASSIGN_TO_REVIEWER = 'true';
+      process.env.SKIP_TITLE = 'skippy';
+      process.env.WITH_LABEL = 'labelly';
+      process.env.SKIP_COLLABORATOR_PR = 'true';
+
+      let parsedConfig = environment.checkEnvironmentForConfig({
+        maxReviewers: 3,
+        numFilesToCheck: 5,
+        userBlacklist: [],
+        userBlacklistForPR: [],
+        userWhitelist: [],
+        fileBlacklist: [],
+        requiredOrgs: [],
+        findPotentialReviewers: true,
+        actions: ['opened'],
+        skipAlreadyAssignedPR: false,
+        skipAlreadyMentionedPR: false,
+        delayed: false,
+        delayedUntil: '3d',
+        assignToReviewer: false,
+        skipTitle: '',
+        withLabel: '',
+        skipCollaboratorPR: false,
+      })
+
+      expect(parsedConfig).toEqual({
+        maxReviewers: 4,
+        numFilesToCheck: 6,
+        userBlacklist: ['user1'],
+        userBlacklistForPR: ['user1','user2'],
+        userWhitelist: ['user3'],
+        fileBlacklist: ['**.md'],
+        requiredOrgs: ['facebook'],
+        findPotentialReviewers: false,
+        actions: ['opened','closed'],
+        skipAlreadyAssignedPR: true,
+        skipAlreadyMentionedPR: true,
+        delayed: true,
+        delayedUntil: '1d',
+        assignToReviewer: true,
+        skipTitle: 'skippy',
+        withLabel: 'labelly',
+        skipCollaboratorPR: true,
+      });
+    });
   });
 });
