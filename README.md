@@ -56,6 +56,39 @@ The bot can be configured by adding a `.mention-bot` file to the base directory 
 
 The glob matching is an extended form of glob syntax performed by [`minimatch`](https://github.com/isaacs/minimatch), with the default options; read [the `minimatch` README](https://github.com/isaacs/minimatch/blob/master/README.md) for more details.
 
+The following default config:
+
+```js
+{
+  maxReviewers: 3,
+  numFilesToCheck: 5,
+  userBlacklist: [],
+  userBlacklistForPR: [],
+  userWhitelist: [],
+  fileBlacklist: [],
+  requiredOrgs: [],
+  findPotentialReviewers: true,
+  actions: ['opened'],
+  skipAlreadyAssignedPR: false,
+  skipAlreadyMentionedPR: false,
+  delayed: false,
+  delayedUntil: '3d',
+  assignToReviewer: false,
+  skipTitle: '',
+  withLabel: '',
+  skipCollaboratorPR: false,
+};
+```
+
+Can be overridden via environment config. e.g.:
+
+```zsh
+MAX_REVIEWERS=2
+DELAYED=true
+USER_BLACKLIST="user1,user2"
+```
+---
+
 ## How Does It Work?
 
 Every time there's a new pull request, GitHub wakes up the mention bot <img src="https://avatars0.githubusercontent.com/u/15710697?v=3&s=40" width="20" height="20" /> using Webhooks.

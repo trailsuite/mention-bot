@@ -17,6 +17,7 @@ var mentionBot = require('./mention-bot.js');
 var messageGenerator = require('./message.js');
 var util = require('util');
 var schedule = require('./schedule.js');
+var environment = require('./environment.js').environment;
 
 var GitHubApi = require('github');
 
@@ -133,6 +134,8 @@ async function work(body) {
     withLabel: '',
     skipCollaboratorPR: false,
   };
+
+  repoConfig = environment.checkEnvironmentForConfig(repoConfig);
 
   try {
     // request config from repo
