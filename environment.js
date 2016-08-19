@@ -14,7 +14,7 @@ function checkEnvironmentForConfig(config:Object) : Object {
 }
 
 function getEnvironmentValueForObjectKey(key:string, originalValue:Object) {
-  let envKeyName = key.replace(/([A-Z]+)/g,
+  let envKeyName = key.replace(/([A-Z]+?[^a-z]|[A-Z])/g,
     (match) => `_${match}`).toUpperCase();
 
   let rawValue = process.env[envKeyName];

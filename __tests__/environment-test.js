@@ -32,14 +32,14 @@ describe('environment', () => {
   it('only inserts underscores for every new word', () => {
     let environment = require('../environment.js').environment;
 
-    process.env.A_KEY_NAME_ID = 'fromEnv'
+    process.env.A_KEY_WITH_ID_IN_IT = 'fromEnv'
 
     let parsedConfig = environment.checkEnvironmentForConfig({
-      aKeyNameID:'fromDefaultConfig'
+      aKeyWithIDInIt:'fromDefaultConfig'
     })
 
     expect(parsedConfig).toEqual({
-      aKeyNameID:'fromEnv'
+      aKeyWithIDInIt:'fromEnv'
     });
   })
 
