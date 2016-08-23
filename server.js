@@ -17,8 +17,8 @@ var mentionBot = require('./mention-bot.js');
 var messageGenerator = require('./message.js');
 var util = require('util');
 var schedule = require('./schedule.js');
-
 var GitHubApi = require('github');
+var serverSupport = require('./server-support.js');
 
 var CONFIG_PATH = '.mention-bot';
 
@@ -132,6 +132,9 @@ async function work(body) {
     skipTitle: '',
     withLabel: '',
     skipCollaboratorPR: false,
+    preventPRChaining: true,
+    preventPRChainingMessage: `Thanks! Unfortunately your PR has the
+      following SHA1s in other open PRs so has been closed. @shas`,
   };
   
   if (process.env.MENTION_BOT_CONFIG) {
@@ -164,10 +167,10 @@ async function work(body) {
   } catch (e) {
     if (e.code === 404 &&
         e.message === '{"message":"Not Found","documentation_url":"https://developer.github.com/v3"}') {
-      console.log('Skipping because the repo is not visible from mention-bot.');
-      return;
+      console.log('Couldn\'t find ' + CONFIG_PATH + ' in repo. Continuing with default configuration.');
+    } else {
+      console.error(e);
     }
-    console.error(e);
   }
 
   function isValid(repoConfig, data) {
@@ -233,6 +236,27 @@ async function work(body) {
 
   if (!isValid(repoConfig, data)) {
     return;
+  }
+
+  if(repoConfig.preventPRChaining) {
+    let commonCommits = await mentionBot.findCommonCommits(
+      data.repository.owner.login, // 'fbsamples'
+      data.repository.name, // 'bot-testing'
+      data.pull_request.number,
+      await serverSupport.openPRIds(github, data),
+      github
+    )
+
+    if(commonCommits.length > 0) {
+      createComment(data, repoConfig.preventPRChainingMessage
+        .replace(
+          new RegExp("@shas","g"),
+          commonCommits.join(", ")
+        )
+      );
+
+      serverSupport.closePr(github, data);
+    }
   }
 
   var org = null;
@@ -371,7 +395,12 @@ async function work(body) {
 
 app.post('/', function(req, res) {
   req.pipe(bl(function(err, body) {
-    work(body).then(function() { res.end(); });
+    work(body)
+      .then(function() { res.end(); })
+      .catch(function(e) {
+        console.error(e.stack);
+        res.status(500).send('Internal Server Error');
+      });
   }));
 });
 
