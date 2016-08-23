@@ -363,16 +363,41 @@ describe('Github Mention', function() {
       {
         path: 'Libraries/Components/MapView/MapView.js',
         deletedLines: [ 74 ],
+        createdLines: [ 74, 84, 85, 86, 87, 88, 89, 90, 91 ]
       },
       {
         path: 'React/Views/RCTMap.m',
         deletedLines: [ 90, 92 ],
+        createdLines: [ 90, 92, 93, 94 ]
       },
       {
         path: 'React/Views/RCTMapManager.m',
-        deletedLines: [ ],
+        deletedLines: [  ],
+        createdLines: [ 40 ],
       },
     ]);
+  });
+
+  describe('When checking the size of PR 3229', ()=> {
+    const largePR = {
+      repoName: 'https://github.com/facebook/react-native',
+      prNumber: 3229,
+      prUser: 'mention-bot',
+      prBaseBranch: 'master',
+      privateRepo: false,
+      org: 'facebook'
+    }
+
+    pit('returns the sum of createdLines and deletedLines', function() {
+      mentionBot.enableCachingForDebugging = true;
+      
+      return mentionBot.prSize(
+        largePR.repoName,
+        largePR.prNumber
+      ).then(function (prSize) {
+        expect(prSize).toEqual(281);
+      });
+    });
   });
 
   it('ParseDiff35fa5', function() {
@@ -384,59 +409,78 @@ describe('Github Mention', function() {
       {
         path: 'website/src/react-native/img/TutorialFinal.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/TutorialMock.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/TutorialSingleFetched.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/TutorialStyledMock.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/chrome_breakpoint.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/favicon.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/header_logo.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
       {
         path: 'website/src/react-native/img/opengraph.png',
         deletedLines: [ ],
+        createdLines: [ ]
       },
     ]);
   });
+
+  function dumpCreatedLines(parsed) {
+    parsed.forEach((entry)=> {
+      console.log(entry.createdLines.join(", "));
+    });
+  }
 
   it('ParseDiff3229', function() {
     var parsed = mentionBot.parseDiff(
       // https://github.com/facebook/react-native/pull/3229.diff
       getFile('3229.diff')
     );
+
     expect(parsed).toEqual([
       {
         path: 'Libraries/WebSocket/WebSocket.ios.js',
         deletedLines: [ 19, 20, 21, 22, 23, 24, 25, 27, 28, 70, 74, 75, 77, 79, 83, 88, 89, 91, 95, 100, 101, 105, 109, 113, 114, 115, 116, 119 ],
+        createdLines: [ 19, 21, 22, 23, 24, 70, 74, 75, 78, 82, 87, 89, 93, 98, 100, 103, 107, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 123 ]
       },
       {
         path: 'Libraries/WebSocket/WebSocketBase.js',
         deletedLines: [ 19, 25, 26, 27, 28, 29 ],
+        createdLines: [ 19, 44, 45 ]
       },
       {
         path: 'Libraries/WebSocket/__mocks__/event-target-shim.js',
         deletedLines: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+        createdLines: [ ]
       },
       {
         path: 'Libraries/WebSocket/__tests__/Websocket-test.js',
         deletedLines: [ ],
+        createdLines: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206 ]
       },
     ]);
   });
@@ -450,6 +494,7 @@ describe('Github Mention', function() {
       {
         path: 'README.md',
         deletedLines: [  ],
+        createdLines: [ 2 ]
       },
     ]);
   });

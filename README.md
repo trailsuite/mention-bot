@@ -51,6 +51,9 @@ The bot can be configured by adding a `.mention-bot` file to the base directory 
   "delayed": false, // mention-bot will wait to comment until specified time in `delayedUntil` value
   "delayedUntil": "3d", // Used if delayed is equal true, permitted values are: minutes, hours, or days, e.g.: '3 days', '40 minutes', '1 hour', '3d', '1h', '10m'
   "skipCollaboratorPR": false, // mention-bot will ignore if PR is made by collaborator
+  "maximumPRSize": 0, // If a PRs created and deleted lines is greater than this number the PR will be closed. 0 is off.
+  "maximumPRSizeMessage": "Thanks! Unfortunately your PR has @totalChanges changes which is more than the \
+      recommended @maximumPRSize changes. Please consider decomposing and resubmitting."
 }
 ```
 
