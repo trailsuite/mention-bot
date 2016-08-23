@@ -10,18 +10,14 @@
 
 "use strict"
 
-jest.dontMock('minimatch');
 jest.dontMock('../server-support.js');
-
-require.requireActual('babel-polyfill');
-var mentionBot = require('../mention-bot.js');
-var fs = require('fs');
 
 describe('server-support', () => {
   let serverSupport = require('../server-support.js');
-
+  
   it('edits the issue state correctly when closing a PR', () => {
-    let githubMock = {
+
+    var githubMock = {
       issues: {
         edit: jest.genMockFunction()
       }
@@ -48,45 +44,6 @@ describe('server-support', () => {
       repo: 'bot-testing',
       state: 'closed',
       user: 'fbsamples'
-    });
-  });
-
-  pit('returns open PRs for a given org', () => {
-    let githubMock = {
-      pullRequests: {
-        getAll: (params,callback) => {
-          callback(
-            null,
-            [{
-              "number": 16
-            },
-            {
-              "number": 6
-            }]
-          )
-        }
-      }
-    };
-
-    return serverSupport.openPRIds(
-      githubMock,
-      {
-        organization: {
-          login: 'trailsuite'
-        },
-        repository: {
-          owner: {
-            login:'trailsuite'
-          },
-          name: 'mention-bot'
-        },
-        pull_request : {
-          number:3
-        }
-      }
-    ).then((result) => {
-      expect(result.length).toBe(2);
-      expect(result[0]).toBe(16);
     });
   });
 });
