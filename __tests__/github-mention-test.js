@@ -454,6 +454,58 @@ describe('Github Mention', function() {
     ]);
   });
 
+  describe('when checking the PR for common repo commits', () => {
+    var githubMock = {
+      pullRequests: {
+        getCommits: (params,callback) => {
+          var shas = {
+            '1': [
+              {sha:'04b928fd7f607f0d0b06c838f2d255494c8eaa03'}
+            ],
+            '2': [
+              {sha:'b0f5444020a2885344eacbdcc86751074a6b735d'},
+              {sha:'de2a15da302aad07fb246c2f5c4be85fbf2e65dd'},
+              {sha:'e0b96f468f4a6318b68e37dcbb78a164b5474bf6'}
+            ],
+            '3': [
+              {sha:'b0f5444020a2885344eacbdcc86751074a6b735d'},
+              {sha:'de2a15da302aad07fb246c2f5c4be85fbf2e65dd'},
+              {sha:'4ed70036758402ce7fde22878c4c56a9adae4c2c'}
+            ]
+          }
+          callback(null, shas[params.number]);
+        }
+      }
+    };
+
+    pit('returns the matching commits if they exist', () => {
+      return mentionBot.findCommonCommits(
+        'mention-bot',
+        'mention-bot',
+        2,
+        [1,2,3],
+        githubMock
+      ).then(function(commonCommits) {
+        expect(commonCommits).toEqual([
+          'b0f5444020a2885344eacbdcc86751074a6b735d',
+          'de2a15da302aad07fb246c2f5c4be85fbf2e65dd'
+        ]);
+      });
+    });
+
+    pit('returns an empty list if non exist', () => {
+      return mentionBot.findCommonCommits(
+        'mention-bot',
+        'mention-bot',
+        1,
+        [1,2,3],
+        githubMock
+      ).then(function(commonCommits) {
+        expect(commonCommits).toEqual([]);
+      });
+    });
+  });
+
   it('ParseBlame1', function() {
     var parsed = mentionBot.parseBlame(
       // https://github.com/facebook/react-native/blame/master/Libraries/Components/MapView/MapView.js

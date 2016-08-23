@@ -526,9 +526,59 @@ async function guessOwnersForPullRequest(
   return guessOwners(files, blames, creator, defaultOwners, fallbackOwners, privateRepo, org, config, github);
 }
 
+async function getCommits(
+  user: string,
+  repo: string,
+  number:number,
+  github: Object
+) : Promise<Array<string>> {
+  return new Promise((resolve, reject) => {
+    github.pullRequests.getCommits({
+      user,
+      repo,
+      number
+    }, (error, data) => {
+      if(error) {
+        reject(error);
+      } else {
+        resolve(data.map((item)=>item.sha));
+      }
+    })
+  });
+}
+
+async function findCommonCommits(
+  user: string,
+  repo: string,
+  number: number,
+  openPRIds: Array<number>,
+  github: Object
+): Promise<Array<string>> {
+  let sourceCommits = await getCommits(user, repo, number, github);
+
+  let sourceCommitSet = new Set(sourceCommits);
+  let commonCommits = new Set();
+
+  for(let counter = 0; counter < openPRIds.length; counter++) {
+    let prId = openPRIds[counter];
+    if(prId === number) continue;
+
+    let siblingCommits = await getCommits(user, repo, prId, github);
+
+    siblingCommits.forEach((commit) => {
+      if(sourceCommitSet.has(commit)) {
+        commonCommits.add(commit);
+      }
+    })
+  }
+
+  return Array.from(commonCommits);
+}
+
 module.exports = {
   enableCachingForDebugging: false,
   parseDiff: parseDiff,
   parseBlame: parseBlame,
   guessOwnersForPullRequest: guessOwnersForPullRequest,
+  findCommonCommits: findCommonCommits
 };
