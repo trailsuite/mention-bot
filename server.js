@@ -137,9 +137,12 @@ async function work(body) {
     skipTitle: '',
     withLabel: '',
     skipCollaboratorPR: false,
+    maximumPRSize: 0,
+    maximumPRSizeMessage: "Thanks! Unfortunately your PR has @totalChanges changes which is more than the \
+        recommended @maximumPRSize changes. Please consider decomposing and resubmitting.",
     preventPRChaining: true,
     preventPRChainingMessage: `Thanks! Unfortunately your PR has the
-      following SHA1s in other open PRs so has been closed. @shas`,
+      following SHA1s in other open PRs so has been closed. @shas`
   };
   
   if (process.env.MENTION_BOT_CONFIG) {
@@ -241,6 +244,29 @@ async function work(body) {
 
   if (!isValid(repoConfig, data)) {
     return;
+  }
+
+  if(repoConfig.maximumPRSize) {
+    let prSize = await mentionBot.prSize(
+      data.repository.html_url,
+      data.pull_request.number,
+      repoConfig
+    )
+
+    if(prSize > repoConfig.maximumPRSize) {
+      createComment(data, repoConfig.maximumPRSizeMessage
+        .replace(
+          new RegExp("@maximumPRSize","g"),
+          repoConfig.maximumPRSize.toString()
+        )
+        .replace(
+          new RegExp("@totalChanges","g"),
+          prSize.toString()
+        )
+      );
+
+      serverSupport.closePr(github, data);
+    }
   }
 
   if(repoConfig.preventPRChaining) {

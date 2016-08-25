@@ -10,12 +10,7 @@
 
 "use strict"
 
-jest.dontMock('minimatch');
 jest.dontMock('../server-support.js');
-
-require.requireActual('babel-polyfill');
-var mentionBot = require('../mention-bot.js');
-var fs = require('fs');
 
 describe('server-support', () => {
   let serverSupport = require('../server-support.js');

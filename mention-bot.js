@@ -62,6 +62,7 @@ function startsWith(str, start) {
 
 function parseDiffFile(lines: Array<string>): FileInfo {
   var deletedLines = [];
+  var createdLines = [];
 
   // diff --git a/path b/path
   var line = lines.pop();
@@ -93,7 +94,9 @@ function parseDiffFile(lines: Array<string>): FileInfo {
       throw new Error('Invalid line, should start with `+++`, instead got \n' + line + '\n');
     }
 
-    var currentFromLine = 0;
+    var currentDeleteLine = 0;
+    var currentAddLine = 0;
+
     while (lines.length > 0) {
       line = lines.pop();
       if (startsWith(line, 'diff --git')) {
@@ -113,15 +116,22 @@ function parseDiffFile(lines: Array<string>): FileInfo {
         var to_line = matches[3];
         var to_count = matches[4];
 
-        currentFromLine = +from_line;
+        currentDeleteLine = currentAddLine = +from_line;
         continue;
       }
 
       if (startsWith(line, '-')) {
-        deletedLines.push(currentFromLine);
+        deletedLines.push(currentDeleteLine);
+      }
+      if (startsWith(line, '+')) {
+        createdLines.push(currentAddLine);
       }
       if (!startsWith(line, '+')) {
-        currentFromLine++;
+        currentDeleteLine++;
+      }
+
+      if(!startsWith(line, '-')) {
+        currentAddLine++;
       }
     }
   }
@@ -129,6 +139,7 @@ function parseDiffFile(lines: Array<string>): FileInfo {
   return {
     path: fromFile,
     deletedLines: deletedLines,
+    createdLines: createdLines
   };
 }
 
@@ -526,6 +537,22 @@ async function guessOwnersForPullRequest(
   return guessOwners(files, blames, creator, defaultOwners, fallbackOwners, privateRepo, org, config, github);
 }
 
+async function prSize(
+  repoURL: string,
+  id: number
+): Promise<number> {
+  let diff = await fetch(repoURL + '/pull/' + id + '.diff');
+  var files = parseDiff(diff);
+
+  let changes = files
+    .reduce(function(previousValue, file) {
+      return file.deletedLines.length + file.createdLines.length + previousValue
+    }
+    ,0);
+
+  return changes;
+}
+
 async function getCommits(
   user: string,
   repo: string,
@@ -580,5 +607,6 @@ module.exports = {
   parseDiff: parseDiff,
   parseBlame: parseBlame,
   guessOwnersForPullRequest: guessOwnersForPullRequest,
+  prSize: prSize,
   findCommonCommits: findCommonCommits
 };
