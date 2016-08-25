@@ -17,8 +17,8 @@ var mentionBot = require('./mention-bot.js');
 var messageGenerator = require('./message.js');
 var util = require('util');
 var schedule = require('./schedule.js');
-
 var GitHubApi = require('github');
+var serverSupport = require('./server-support.js');
 
 var CONFIG_PATH = '.mention-bot';
 
@@ -137,6 +137,9 @@ async function work(body) {
     skipTitle: '',
     withLabel: '',
     skipCollaboratorPR: false,
+    preventPRChaining: true,
+    preventPRChainingMessage: `Thanks! Unfortunately your PR has the
+      following SHA1s in other open PRs so has been closed. @shas`,
   };
   
   if (process.env.MENTION_BOT_CONFIG) {
@@ -238,6 +241,27 @@ async function work(body) {
 
   if (!isValid(repoConfig, data)) {
     return;
+  }
+
+  if(repoConfig.preventPRChaining) {
+    let commonCommits = await mentionBot.findCommonCommits(
+      data.repository.owner.login, // 'fbsamples'
+      data.repository.name, // 'bot-testing'
+      data.pull_request.number,
+      await serverSupport.openPRIds(github, data),
+      github
+    )
+
+    if(commonCommits.length > 0) {
+      createComment(data, repoConfig.preventPRChainingMessage
+        .replace(
+          new RegExp("@shas","g"),
+          commonCommits.join(", ")
+        )
+      );
+
+      serverSupport.closePr(github, data);
+    }
   }
 
   var org = null;
